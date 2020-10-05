@@ -142,7 +142,7 @@ def menu_switch(case, cert_dir):
               '2': viewCert,
               '3': updateCert,
               '4': extractCert,
-              '5': quit
+              '5': leave
              }
     return switch[case](cert_dir)
 
@@ -159,6 +159,13 @@ def update_switch(case):
               '7': 'currently_used'
              }
     return switch[case]
+
+
+def leave(cert_dir):
+    
+    # Exit program
+    print()
+    quit()
 
 
 def menu(cert_dir):
