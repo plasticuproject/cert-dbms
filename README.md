@@ -1,0 +1,1 @@
+Place directory with certs in the same directory as `add.py` and `manage.py`, or place fresh certs you would like to add to the database into said directory and run `./add.py <cert directory>` to initialize database or add certs to database. Run `./manage.py <cert directory>` to manage the database.
