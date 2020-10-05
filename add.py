@@ -18,7 +18,7 @@ directory           directory with certs to add
 def addCerts(cert_dir):
 
     # If DATABASE does not exist, initialize it
-    if (path / 'cert.db').is_file() == False:
+    if (path / 'cert.db').is_file() == False: # pylint: disable=E1101
         con = sqlite3.connect('cert.db')
         cursor_obj = con.cursor()
         cursor_obj.execute('CREATE TABLE certs(id text PRIMARY KEY, date_added text, applied integer, date_applied text, banned integer, banned_date text, required_activation integer, currently_used integer)')
@@ -73,5 +73,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             quit()
     else:
-        print(f'\n[*] {argv[1]} not a vaild directory\n')
+        print(f'\n[*] {argv[1]} not a valid directory\n')
 
