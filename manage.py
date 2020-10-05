@@ -188,5 +188,5 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             quit()
     else:
-        print(f'\n[*] {argv[1]} not a vaild directory\n')
+        print(f'\n[*] {argv[1]} not a valid directory\n')
 
