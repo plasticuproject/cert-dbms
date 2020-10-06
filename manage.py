@@ -119,7 +119,7 @@ def extractCert(cert_dir):
     try:
         name = rows[0][0]
     except IndexError:
-        print('[!] No Availible Certs [!]')
+        print('[!] No Available Certs [!]')
         leave(cert_dir)
     cert_loc = path / cert_dir / name
     try:
