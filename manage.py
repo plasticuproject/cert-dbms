@@ -116,7 +116,11 @@ def extractCert(cert_dir):
     # Extract new cert and update DATABASE values for previously used and new cert
     cursor_obj.execute('select id from certs where banned is "0" and currently_used is "0"')
     rows = cursor_obj.fetchall()
-    name = rows[0][0]
+    try:
+        name = rows[0][0]
+    except IndexError:
+        print('[!] No Availible Certs [!]')
+        leave(cert_dir)
     cert_loc = path / cert_dir / name
     try:
         subprocess.call(['wine', 'REDACTED.exe', cert_loc], timeout=5)
