@@ -20,10 +20,11 @@ directory           directory where certs are stored
 menuText = '''
 ####################
 # [1] LIST CERTS   #
-# [2] VIEW CERT    #
-# [3] UPDATE CERT  #
-# [4] EXTRACT CERT #
-# [5] QUIT         #
+# [2] VIEW CURRENT #
+# [3] VIEW CERT    #
+# [4] UPDATE CERT  #
+# [5] EXTRACT CERT #
+# [6] QUIT         #
 ####################
 '''
 
@@ -118,35 +119,35 @@ def extractCert(cert_dir):
     rows = cursor_obj.fetchall()
     try:
         name = rows[0][0]
+        cert_loc = path / cert_dir / name
+        try:
+            subprocess.call(['wine', 'REDACTED.exe', cert_loc], timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        print(f'\n[#] EXTRACTED: {name} [#]')
+        applied = str(datetime.datetime.now())
+        cursor_obj.execute('UPDATE certs SET banned = "1" where currently_used is "1"')
+        cursor_obj.execute('UPDATE certs SET banned_date = "'+applied+'" where currently_used is "1"')
+        cursor_obj.execute('UPDATE certs SET currently_used = "0" where currently_used is "1"')
+        cursor_obj.execute('UPDATE certs SET currently_used = "1" where id is "'+name+'"')
+        cursor_obj.execute('UPDATE certs SET date_applied = "'+applied+'" where id is "'+name+'"')
+        cursor_obj.execute('UPDATE certs SET applied = "1" where id is "'+name+'"')
+        print('[#] UPDATED DATABASE [#]\n')
+        printCert(name)
+        con.commit()
     except IndexError:
         print('[!] No Available Certs [!]')
-        leave(cert_dir)
-    cert_loc = path / cert_dir / name
-    try:
-        subprocess.call(['wine', 'REDACTED.exe', cert_loc], timeout=5)
-    except subprocess.TimeoutExpired:
-        pass
-    print(f'\n[#] EXTRACTED: {name} [#]')
-    applied = str(datetime.datetime.now())
-    cursor_obj.execute('UPDATE certs SET banned = "1" where currently_used is "1"')
-    cursor_obj.execute('UPDATE certs SET banned_date = "'+applied+'" where currently_used is "1"')
-    cursor_obj.execute('UPDATE certs SET currently_used = "0" where currently_used is "1"')
-    cursor_obj.execute('UPDATE certs SET currently_used = "1" where id is "'+name+'"')
-    cursor_obj.execute('UPDATE certs SET date_applied = "'+applied+'" where id is "'+name+'"')
-    cursor_obj.execute('UPDATE certs SET applied = "1" where id is "'+name+'"')
-    print('[#] UPDATED DATABASE [#]')
-    printCert(name)
-    con.commit()
 
 
 def menu_switch(case, cert_dir):
 
     # Main menu switch
     switch = {'1': listCerts,
-              '2': viewCert,
-              '3': updateCert,
-              '4': extractCert,
-              '5': leave
+              '2': viewCurrent,
+              '3': viewCert,
+              '4': updateCert,
+              '5': extractCert,
+              '6': leave
              }
     return switch[case](cert_dir)
 
@@ -172,10 +173,23 @@ def leave(cert_dir):
     quit()
 
 
+def viewCurrent(cer_dir):
+
+    # Print cert that is currently in use
+    cursor_obj.execute('select id from certs where currently_used is "1"')
+    rows = cursor_obj.fetchall()
+    try:
+        name = rows[0][0]
+        print()
+        printCert(name)
+    except IndexError:
+        print('[!] No Cert Currently In Use [!]')
+
+
 def menu(cert_dir):
 
     # Main menu
-    cases = ['1', '2', '3', '4', '5']
+    cases = ['1', '2', '3', '4', '5', '6']
     while True:
         print(menuText)
         choice = input('[*] Choice: ')
@@ -200,4 +214,3 @@ if __name__ == '__main__':
             quit()
     else:
         print(f'\n[*] {argv[1]} not a valid directory\n')
-
