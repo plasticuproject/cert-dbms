@@ -7,14 +7,12 @@ import sqlite3
 import pathlib
 
 path = pathlib.Path.cwd()
-con = sqlite3.connect('cert.db')
-cursor_obj = con.cursor()
 
 helpText = '''
-Usage: manage.py [-h] directory
+Usage: manage.py [-h] database
 
 -h, --help          bring up this help message
-directory           directory where certs are stored
+database            name of cert database
 '''
 
 menuText = '''
@@ -183,7 +181,7 @@ def viewCurrent(cer_dir):
         print()
         printCert(name)
     except IndexError:
-        print('[!] No Cert Currently In Use [!]')
+        print('\n[!] No Cert Currently In Use [!]')
 
 
 def menu(cert_dir):
@@ -206,11 +204,19 @@ if __name__ == '__main__':
         print(helpText)
         quit()
 
-    # Check if directory name is valid, run stuff if so
-    if (path / argv[1]).is_dir():
+    # Check if file name is valid, run stuff if so
+    if (path / argv[1]).suffix == '.db':
+        con = sqlite3.connect(argv[1])
+        cursor_obj = con.cursor()
+        try:
+            cursor_obj.execute('select * from certs')
+        except sqlite3.DatabaseError:
+            print(f'\n[*] {argv[1]} is not the cert database file\n')
+            quit()
         try:
             menu(argv[1])
         except KeyboardInterrupt:
             quit()
     else:
-        print(f'\n[*] {argv[1]} not a valid directory\n')
+        print(f'\n[*] {argv[1]} is not a valid database file\n')
+
