@@ -117,7 +117,7 @@ def extractCert(cert_dir):
     rows = cursor_obj.fetchall()
     try:
         name = rows[0][0]
-        cert_loc = path / cert_dir / name
+        cert_loc = path / cert_dir[:-3] / name
         try:
             subprocess.call(['wine', 'REDACTED.exe', cert_loc], timeout=5)
         except subprocess.TimeoutExpired:
