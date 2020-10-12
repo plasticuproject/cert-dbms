@@ -1,7 +1,8 @@
 #!/bin/bash
 
+: ${1?"Usage: $0 DATABASE_FILE"}
 RESULT=$(expect - << EOF
-spawn $(pwd)/manage.py certs.db
+spawn $(pwd)/manage.py $1
 sleep 1
 expect "Choice: "
 sleep 1
