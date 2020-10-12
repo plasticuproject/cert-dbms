@@ -1,8 +1,7 @@
 #!/bin/bash
 
-CURDIR=$(pwd)
 RESULT=$(expect - << EOF
-spawn $CURDIR/manage.py certs.db
+spawn $(pwd)/manage.py certs.db
 sleep 1
 expect "Choice: "
 sleep 1
