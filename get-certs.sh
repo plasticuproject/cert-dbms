@@ -1,6 +1,6 @@
 #!/bin/bash
 
-: ${1?"Usage: $0 DATABASE_FILE"}
+if [ -z "$*" ]; then echo "Usage: ./get-certs.sh DATABASE_FILE"; exit 0; fi
 RESULT=$(expect - << EOF
 spawn $(pwd)/manage.py $1
 sleep 1
