@@ -2,6 +2,7 @@
 """manage.py"""
 
 from sys import argv
+from typing import Any
 import subprocess
 import datetime
 import sqlite3
@@ -151,12 +152,14 @@ def menu_switch(case: str, cert_dir: str) -> None:
         '5': extract_cert,
         '6': leave
     }
+    function_call: Any = switch[case]
     if case == '5':
-        return switch[case](cert_dir)
-    return switch[case]()
+        function_call(cert_dir)
+    else:
+        function_call()
 
 
-def update_switch(case: str) -> None:
+def update_switch(case: str) -> str:
     """Update cert switch."""
     switch = {
         '1': 'date_added',

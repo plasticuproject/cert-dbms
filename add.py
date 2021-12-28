@@ -59,10 +59,12 @@ def add_certs(cert_dir: str) -> None:
     # Print output
     if skipped_certs:
         print('\n[*] Already in DATABASE, skipping:\n')
-        _ = [print('\t' + x) for x in skipped_certs]
+        for _x in skipped_certs:
+            print('\t' + _x)
     if added_certs:
         print('\n\n[*] Added to the DATABASE:\n')
-        _ = [print('\t' + x) for x in added_certs]
+        for _x in added_certs:
+            print('\t' + _x)
     print(f'\n\n[*] Added: {len(added_certs)}')
     print(f'[*] Skipped {len(skipped_certs)}\n')
 
