@@ -22,6 +22,18 @@ if ! test -f $1; then
 fi;
 
 
+#======================================#
+# Check all tools needed are installed #
+#======================================#
+ps="binwalk openssl mktemp basename dirname awk tr cat test date grep dd stat mkdir cat rm echo mv"
+for i in $ps; do
+	if ! command -v $i 1>/dev/null; then
+		echo "Command $i not installed";
+		exit 0;
+	fi;
+done;
+
+
 #=======================#
 # Parse files from blob #
 #=======================#
@@ -88,6 +100,7 @@ echo "$dt Writing private.key, size: $(stat --format='%s' private.key)";
 rs=$(($(stat --format='%s' private.key) + 28));
 dd if=$ed/_$fn.extracted/$ko.key of=root.key bs=1 skip=$rs count=270 2>/dev/null;
 echo "$dt Writing root.key, size: $(stat --format='%s' root.key)";
+
 
 #=================#
 # Extract cm cert #
