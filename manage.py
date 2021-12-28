@@ -118,10 +118,7 @@ def extractCert(cert_dir):
     try:
         name = rows[0][0]
         cert_loc = path / cert_dir[:-3] / name
-        try:
-            subprocess.call(['wine', 'REDACTED.exe', cert_loc], timeout=5)
-        except subprocess.TimeoutExpired:
-            pass
+        subprocess.run(['./bpi-extract.sh', cert_loc])
         print(f'\n[#] EXTRACTED: {name} [#]')
         applied = str(datetime.datetime.now())
         cursor_obj.execute('UPDATE certs SET banned = "1" where currently_used is "1"')
