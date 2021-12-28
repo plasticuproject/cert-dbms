@@ -38,8 +38,8 @@ done;
 # Parse files from blob #
 #=======================#
 tf=$(mktemp /dev/shm/tmp.XXXXXXXXX);
-ed=$(dirname $1)
-fn=$(basename $1)
+ed=$(dirname $1);
+fn=$(basename $1);
 echo "Plastic's BCM Raw BPI Certificate extraction tool Ver 1.0";
 echo "$dt Extracting $ed/$fn";
 binwalk -e $1 -C $ed 1>$tf;
