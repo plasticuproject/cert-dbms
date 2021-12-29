@@ -1,4 +1,11 @@
-#!/bin/bash
+#!/bin/sh
+
+
+################################################################
+# Just writes a list of all certs contained in the database to #
+# the file 'certlist.txt', that's all                          #
+################################################################
+
 
 if [ -z "$*" ]; then echo "Usage: ./get-certs.sh DATABASE_FILE"; exit 0; fi
 RESULT=$(expect - << EOF

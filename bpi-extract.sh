@@ -25,7 +25,7 @@ fi;
 #======================================#
 # Check all tools needed are installed #
 #======================================#
-ps="binwalk openssl mktemp basename dirname awk cut test date grep dd stat mkdir cat rm echo mv"
+ps="binwalk openssl mktemp basename dirname awk cut test date grep dd stat mkdir cat rm echo mv tr"
 for i in $ps; do
 	if ! command -v $i 1>/dev/null; then
 		echo "Command $i not installed";

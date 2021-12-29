@@ -41,14 +41,14 @@ UPDATE_TEXT = '''
 '''
 
 
-def list_certs() -> None:
+def list_certs(cursor_obj: sqlite3.Cursor) -> None:
     """List all cert names in DATABASE."""
-    CURSOR_OBJ.execute('select * from certs')
-    rows = CURSOR_OBJ.fetchall()
+    cursor_obj.execute('select * from certs')
+    rows = cursor_obj.fetchall()
     for row in rows:
-        CURSOR_OBJ.execute('select banned from certs where id = "' + row[0] +
+        cursor_obj.execute('select banned from certs where id = "' + row[0] +
                            '"')
-        is_banned = CURSOR_OBJ.fetchall()[0][0]
+        is_banned = cursor_obj.fetchall()[0][0]
         if is_banned == 1:
             print('BANNED\t' + row[0])
         else:
@@ -80,7 +80,7 @@ def view_cert() -> None:
     print_cert(name)
 
 
-def update_cert() -> None:
+def update_cert(con: sqlite3.Connection, cursor_obj: sqlite3.Cursor) -> None:
     """Manually update values for specific cert."""
     cases = ['1', '2', '3', '4', '5', '6', '7']
     bools = {'no': '0', 'yes': '1'}
@@ -95,54 +95,56 @@ def update_cert() -> None:
         if item in bool_items:
             if value.lower() == 'no' or value.lower() == 'yes':
                 value = bools[value.lower()]
-                CURSOR_OBJ.execute('UPDATE certs SET ' + item + '= "' + value +
+                cursor_obj.execute('UPDATE certs SET ' + item + '= "' + value +
                                    '" where id is "' + name + '"')
-                CON.commit()
+                con.commit()
             else:
                 print('\n[!] Expected YES or NO Value [!]')
         else:
             if value == '':
                 value = 'None'
-            CURSOR_OBJ.execute('UPDATE certs SET ' + item + '= "' + value +
+            cursor_obj.execute('UPDATE certs SET ' + item + '= "' + value +
                                '" where id is "' + name + '"')
-            CON.commit()
+            con.commit()
         print_cert(name)
     else:
         print('\n[!] Invalid Choice [!]')
 
 
-def extract_cert(cert_dir: str) -> None:
+def extract_cert(cert_dir: str, con: sqlite3.Connection,
+                 cursor_obj: sqlite3.Cursor) -> None:
     """Extract new cert and update DATABASE for used and new cert."""
-    CURSOR_OBJ.execute(
+    cursor_obj.execute(
         'select id from certs where banned is "0" and currently_used is "0"')
-    rows = CURSOR_OBJ.fetchall()
+    rows = cursor_obj.fetchall()
     try:
         name = rows[0][0]
         cert_loc = PATH / cert_dir[:-3] / name
         subprocess.run(['./bpi-extract.sh', cert_loc])
         print(f'\n[#] EXTRACTED: {name} [#]')
         applied = str(datetime.datetime.now())
-        CURSOR_OBJ.execute(
+        cursor_obj.execute(
             'UPDATE certs SET banned = "1" where currently_used is "1"')
-        CURSOR_OBJ.execute('UPDATE certs SET banned_date = "' + applied +
+        cursor_obj.execute('UPDATE certs SET banned_date = "' + applied +
                            '" where currently_used is "1"')
-        CURSOR_OBJ.execute(
+        cursor_obj.execute(
             'UPDATE certs SET currently_used = "0" where currently_used is "1"'
         )
-        CURSOR_OBJ.execute(
+        cursor_obj.execute(
             'UPDATE certs SET currently_used = "1" where id is "' + name + '"')
-        CURSOR_OBJ.execute('UPDATE certs SET date_applied = "' + applied +
+        cursor_obj.execute('UPDATE certs SET date_applied = "' + applied +
                            '" where id is "' + name + '"')
-        CURSOR_OBJ.execute('UPDATE certs SET applied = "1" where id is "' +
+        cursor_obj.execute('UPDATE certs SET applied = "1" where id is "' +
                            name + '"')
         print('[#] UPDATED DATABASE [#]\n')
         print_cert(name)
-        CON.commit()
+        con.commit()
     except IndexError:
         print('[!] No Available Certs [!]')
 
 
-def menu_switch(case: str, cert_dir: str) -> None:
+def menu_switch(case: str, cert_dir: str, con: sqlite3.Connection,
+                cursor_obj: sqlite3.Cursor) -> None:
     """Main menu switch."""
     switch = {
         '1': list_certs,
@@ -153,10 +155,14 @@ def menu_switch(case: str, cert_dir: str) -> None:
         '6': leave
     }
     function_call: Any = switch[case]
-    if case == '5':
-        function_call(cert_dir)
-    else:
+    if case == '1' or case == '2':
+        function_call(cursor_obj)
+    elif case == '5':
+        function_call(cert_dir, con, cursor_obj)
+    elif case == '3' or case == '6':
         function_call()
+    else:
+        function_call(con, cursor_obj)
 
 
 def update_switch(case: str) -> str:
@@ -179,10 +185,10 @@ def leave() -> None:
     quit()
 
 
-def view_current() -> None:
+def view_current(cursor_obj: sqlite3.Cursor) -> None:
     """Print cert that is currently in use."""
-    CURSOR_OBJ.execute('select id from certs where currently_used is "1"')
-    rows = CURSOR_OBJ.fetchall()
+    cursor_obj.execute('select id from certs where currently_used is "1"')
+    rows = cursor_obj.fetchall()
     try:
         name = rows[0][0]
         print()
@@ -191,7 +197,8 @@ def view_current() -> None:
         print('\n[!] No Cert Currently In Use [!]')
 
 
-def menu(cert_dir: str) -> None:
+def menu(cert_dir: str, con: sqlite3.Connection,
+         cursor_obj: sqlite3.Cursor) -> None:
     """Main menu."""
     cases = ['1', '2', '3', '4', '5', '6']
     while True:
@@ -200,7 +207,7 @@ def menu(cert_dir: str) -> None:
         if choice not in cases:
             continue
         else:
-            menu_switch(choice, cert_dir)
+            menu_switch(choice, cert_dir, con, cursor_obj)
 
 
 if __name__ == '__main__':
@@ -214,13 +221,14 @@ if __name__ == '__main__':
     if (PATH / argv[1]).suffix == '.db':
         CON = sqlite3.connect(argv[1])
         CURSOR_OBJ = CON.cursor()
+        print(type(CON), type(CURSOR_OBJ))
         try:
             CURSOR_OBJ.execute('select * from certs')
         except sqlite3.DatabaseError:
             print(f'\n[*] {argv[1]} is not the cert database file\n')
             quit()
         try:
-            menu(argv[1])
+            menu(argv[1], CON, CURSOR_OBJ)
         except KeyboardInterrupt:
             quit()
     else:

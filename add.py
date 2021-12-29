@@ -21,7 +21,7 @@ def add_certs(cert_dir: str) -> None:
 
     # If DATABASE does not exist, initialize it
     d_b = cert_dir + '.db'
-    if (PATH / d_b).is_file() is False:  # pylint: disable=E1101
+    if (PATH / d_b).is_file() is False:
         con = sqlite3.connect(d_b)
         cursor_obj = con.cursor()
         cursor_obj.execute(
