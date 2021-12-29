@@ -55,11 +55,11 @@ def list_certs(cursor_obj: sqlite3.Cursor) -> None:
             print('\t' + row[0])
 
 
-def print_cert(name: str) -> None:
+def print_cert(name: str, cursor_obj: sqlite3.Cursor) -> None:
     """Print cert data."""
     try:
-        CURSOR_OBJ.execute('select * from certs where id is "' + name + '"')
-        cert_data = CURSOR_OBJ.fetchall()
+        cursor_obj.execute('select * from certs where id is "' + name + '"')
+        cert_data = cursor_obj.fetchall()
         bools = {0: 'No', 1: 'Yes'}
         print(f'''
                                Name:  {cert_data[0][0]}
@@ -74,10 +74,10 @@ def print_cert(name: str) -> None:
         print('\n[!] Invalid Cert Name [!]')
 
 
-def view_cert() -> None:
+def view_cert(cursor_obj: sqlite3.Cursor) -> None:
     """View cert data."""
     name = input('[*] Cert Name: ')
-    print_cert(name)
+    print_cert(name, cursor_obj)
 
 
 def update_cert(con: sqlite3.Connection, cursor_obj: sqlite3.Cursor) -> None:
@@ -86,7 +86,7 @@ def update_cert(con: sqlite3.Connection, cursor_obj: sqlite3.Cursor) -> None:
     bools = {'no': '0', 'yes': '1'}
     bool_items = ['applied', 'banned', 'required_activation', 'currently_used']
     name = input('[*] Cert name: ')
-    print_cert(name)
+    print_cert(name, cursor_obj)
     print(UPDATE_TEXT)
     update_choice = input('\n[*] Update Which Value: ')
     if update_choice in cases:
@@ -106,7 +106,7 @@ def update_cert(con: sqlite3.Connection, cursor_obj: sqlite3.Cursor) -> None:
             cursor_obj.execute('UPDATE certs SET ' + item + '= "' + value +
                                '" where id is "' + name + '"')
             con.commit()
-        print_cert(name)
+        print_cert(name, cursor_obj)
     else:
         print('\n[!] Invalid Choice [!]')
 
@@ -137,7 +137,7 @@ def extract_cert(cert_dir: str, con: sqlite3.Connection,
         cursor_obj.execute('UPDATE certs SET applied = "1" where id is "' +
                            name + '"')
         print('[#] UPDATED DATABASE [#]\n')
-        print_cert(name)
+        print_cert(name, cursor_obj)
         con.commit()
     except IndexError:
         print('[!] No Available Certs [!]')
@@ -155,11 +155,11 @@ def menu_switch(case: str, cert_dir: str, con: sqlite3.Connection,
         '6': leave
     }
     function_call: Any = switch[case]
-    if case == '1' or case == '2':
+    if case == '1' or case == '2' or case == '3':
         function_call(cursor_obj)
     elif case == '5':
         function_call(cert_dir, con, cursor_obj)
-    elif case == '3' or case == '6':
+    elif case == '6':
         function_call()
     else:
         function_call(con, cursor_obj)
@@ -192,7 +192,7 @@ def view_current(cursor_obj: sqlite3.Cursor) -> None:
     try:
         name = rows[0][0]
         print()
-        print_cert(name)
+        print_cert(name, cursor_obj)
     except IndexError:
         print('\n[!] No Cert Currently In Use [!]')
 
