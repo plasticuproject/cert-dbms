@@ -25,7 +25,7 @@ fi;
 #======================================#
 # Check all tools needed are installed #
 #======================================#
-ps="binwalk openssl mktemp basename dirname awk tr cat test date grep dd stat mkdir cat rm echo mv"
+ps="binwalk openssl mktemp basename dirname awk cut test date grep dd stat mkdir cat rm echo mv"
 for i in $ps; do
 	if ! command -v $i 1>/dev/null; then
 		echo "Command $i not installed";
@@ -43,10 +43,10 @@ fn=$(basename $1);
 echo "Plastic's BCM Raw BPI Certificate extraction tool Ver 1.0";
 echo "$dt Extracting $ed/$fn";
 binwalk -e $1 -C $ed 1>$tf;
-ko=$(cat $tf | awk '(NR==4){ print $2 }' | tr -d 0x);
-kt=$(cat $tf | awk '(NR==5){ print $2 }' | tr -d 0x);
-co=$(cat $tf | awk '(NR==6){ print $2 }' | tr -d 0x);
-ct=$(cat $tf | awk '(NR==7){ print $2 }' | tr -d 0x);
+ko=$(cat $tf | awk '(NR==4){ print $2 }' | cut -c 3-);
+kt=$(cat $tf | awk '(NR==5){ print $2 }' | cut -c 3-);
+co=$(cat $tf | awk '(NR==6){ print $2 }' | cut -c 3-);
+ct=$(cat $tf | awk '(NR==7){ print $2 }' | cut -c 3-);
 
 
 #===========================================================#
