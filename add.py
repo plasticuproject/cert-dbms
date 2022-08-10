@@ -2,31 +2,34 @@
 """add.py"""
 
 from sys import argv
+from sys import exit as sys_exit
 import datetime
 import sqlite3
 import pathlib
 
 PATH = pathlib.Path.cwd()
 
-HELP_TEXT = '''
+HELP_TEXT = """
 Usage: add.py [-h] directory
 
 -h, --help          bring up this help message
 directory           directory with certs to add
-'''
+"""
 
 
 def add_certs(cert_dir: str) -> None:
     """Add new certs to database. Initialize database if none exists."""
 
     # If DATABASE does not exist, initialize it
-    d_b = cert_dir + '.db'
+    d_b = cert_dir + ".db"
     if (PATH / d_b).is_file() is False:
         con = sqlite3.connect(d_b)
         cursor_obj = con.cursor()
-        cursor_obj.execute(
-            'CREATE TABLE certs(id text PRIMARY KEY, date_added text, applied integer, date_applied text, banned integer, banned_date text, required_activation integer, currently_used integer)'
-        )
+        cursor_obj.execute('CREATE TABLE certs(id text PRIMARY KEY, '
+                           'date_added text, applied integer, '
+                           'date_applied text, banned integer, '
+                           'banned_date text, required_activation integer, '
+                           'currently_used integer)')
 
     # Add new cert file info for all UNIQUE cert files from directory
     con = sqlite3.connect(d_b)
@@ -37,8 +40,8 @@ def add_certs(cert_dir: str) -> None:
     for cert_file in add_path.iterdir():
 
         # Check that file in directory is indeed a cert file and set values
-        if cert_file.is_file(
-        ) and cert_file.suffix == '.txt':  # TODO find file sig
+        if (cert_file.is_file()
+                and cert_file.suffix == ".txt"):  # TODO find file sig
             cert_name = cert_file.name
             added = datetime.datetime.now()
             entities = (cert_name, added, 0, 0, 0, 0)
@@ -46,8 +49,9 @@ def add_certs(cert_dir: str) -> None:
             # Try to add UNIQUE cert file to DATABASE
             try:
                 cursor_obj.execute(
-                    'INSERT INTO certs(id, date_added, applied, banned, required_activation, currently_used) VALUES(?, ?, ?, ?, ?, ?)',
-                    entities)
+                    'INSERT INTO certs(id, date_added, '
+                    'applied, banned, required_activation, currently_used) '
+                    'VALUES(?, ?, ?, ?, ?, ?)', entities)
                 con.commit()
                 added_certs.append(cert_name)
 
@@ -58,32 +62,32 @@ def add_certs(cert_dir: str) -> None:
 
     # Print output
     if skipped_certs:
-        print('\n[*] Already in DATABASE, skipping:\n')
+        print("\n[*] Already in DATABASE, skipping:\n")
         for _x in skipped_certs:
-            print('\t' + _x)
+            print("\t" + _x)
     if added_certs:
-        print('\n\n[*] Added to the DATABASE:\n')
+        print("\n\n[*] Added to the DATABASE:\n")
         for _x in added_certs:
-            print('\t' + _x)
-    print(f'\n\n[*] Added: {len(added_certs)}')
-    print(f'[*] Skipped {len(skipped_certs)}\n')
+            print("\t" + _x)
+    print(f"\n\n[*] Added: {len(added_certs)}")
+    print(f"[*] Skipped {len(skipped_certs)}\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Check for help flag
-    if len(argv) < 2 or argv[1] == '--help' or argv[1] == '-h':
+    if len(argv) < 2 or argv[1] == "--help" or argv[1] == "-h":
         print(HELP_TEXT)
-        quit()
+        sys_exit()
 
     # Check if directory name is valid, run stuff if so
     if (PATH / argv[1]).is_dir():
         CERT_DIR = argv[1]
-        if CERT_DIR[-1] == '/':
+        if CERT_DIR[-1] == "/":
             CERT_DIR = CERT_DIR[:-1]
         try:
             add_certs(CERT_DIR)
         except KeyboardInterrupt:
-            quit()
+            sys_exit()
     else:
-        print(f'\n[*] {argv[1]} not a valid directory\n')
+        print(f"\n[*] {argv[1]} not a valid directory\n")
